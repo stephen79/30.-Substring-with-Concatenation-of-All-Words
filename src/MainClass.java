@@ -22,6 +22,82 @@ class Solution {
 		}
 		int word_len = words[0].length();
 		int word_count = words.length;
+        int l_index = 0;
+        int r_index = 0;
+        int str_len = s.length();
+        int sub_str_len = word_len*word_count;
+        Map<String, Integer> currWordMap = new HashMap<String, Integer>();
+        for (int i = 0; i < word_len; i++) {
+        	pn("i:" + i + " sub_str_len:" + sub_str_len + " str_len:" + str_len);
+        	l_index = i;
+        	r_index = l_index;
+        	currWordMap = new HashMap<String, Integer>();
+	        while (l_index + sub_str_len <= str_len && r_index + word_len <= str_len) {
+	        	String currentStr = s.substring(r_index, r_index + word_len);
+	        	// valid word
+	        	if (wordMap.containsKey(currentStr)) {
+	        		int count = wordMap.get(currentStr);
+	        		int collect = currWordMap.getOrDefault(currentStr, 0);
+	        		if (collect < count) {
+	        			pn("add:" + currentStr);
+	        			// add into collection and move toward
+	        			currWordMap.put(currentStr, currWordMap.getOrDefault(currentStr, 0) + 1);
+	        			r_index += word_len;
+	        			if (r_index - l_index == sub_str_len) {
+	        				pn("sol:" + l_index);
+	        				list.add(l_index);
+	        				String word = s.substring(l_index, l_index + word_len);
+	        				currWordMap.put(word, currWordMap.getOrDefault(word, 0) - 1);
+	        				l_index += word_len;
+	        			}
+	        		}
+	        		else {
+	        			// have enough currentStr, try to remove from the beginning
+	        			int indexOfCurrStr = l_index + s.substring(l_index, r_index).indexOf(currentStr);
+	        			for (int index = l_index; index + word_len <= r_index; index = index + word_len) {
+	        				String word = s.substring(index, index + word_len);
+	        				pn("remove:" + word);
+	        				currWordMap.put(word, currWordMap.getOrDefault(word, 0) - 1);
+	        				l_index += word_len;
+	        				if (l_index == indexOfCurrStr + word_len) {
+	        					break;
+	        				}
+	        			}
+	        			pn("add after remove:" + currentStr);
+	        			currWordMap.put(currentStr, currWordMap.getOrDefault(currentStr, 0) + 1);
+	        			r_index += word_len;
+	        		}
+	        	}
+	        	else {
+	        		currWordMap = new HashMap<String, Integer>();
+	        		l_index = r_index + word_len;
+	        		r_index = l_index;
+	        	}
+	        }
+        }
+
+		return list;
+	}
+	
+	public void pn(String str) {
+		System.out.println(str);
+	}
+	public void buildMap(String[] words, Map<String, Integer> wordMap) {
+		for (int i=0; i < words.length; i++) {
+			wordMap.put(words[i], wordMap.getOrDefault(words[i], 0) + 1);
+		}
+	}
+	public List<Integer> mod_solution(String s, String[] words) {
+
+		int[] counts = new int[s.length()];
+		Map<String, Integer> wordMap = new HashMap<String, Integer>();
+		buildMap(words, wordMap);
+		List<Integer> list = new ArrayList<Integer>();
+		if (s == null || s == "" || words.length == 0) {
+			return list;
+		}
+		int word_len = words[0].length();
+		int word_count = words.length;
 		int collect_words = 0;
 		Map<String, Integer> currWordMap;
 		pn("s:" + s);
@@ -48,7 +124,6 @@ class Solution {
 						// Let's remove from the beginning of our collected words (currWordMap) until empty or found the same word as currentStr 
 						// So that we can move toward with this currentStr
 						String beginStr;
-						int indexOfCurrentStr = s.substring(beginningIndex, j).indexOf(currentStr);
 						if (s.substring(beginningIndex, j).contains(currentStr)) {
 							do {
 								beginStr = s.substring(beginningIndex, beginningIndex + word_len);
@@ -106,15 +181,6 @@ class Solution {
 
 		return list;
 	}
-	
-	public void pn(String str) {
-		System.out.println(str);
-	}
-	public void buildMap(String[] words, Map<String, Integer> wordMap) {
-		for (int i=0; i < words.length; i++) {
-			wordMap.put(words[i], wordMap.getOrDefault(words[i], 0) + 1);
-		}
-	}
 }
 
 public class MainClass {
@@ -149,6 +215,9 @@ public class MainClass {
 	}
 
 	public static void main(String[] args) throws IOException {
+		String s = "lingmindraboofooowingdingbarrwingmonkeypoundcake";
+		String[] words = stringToStringArray(" [\"fooo\",\"barr\",\"wing\",\"ding\",\"wing\"] ");
+		
 		// System.out.println("Hello" + ((1 << 2) & 2));
 //		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 //		String line;
@@ -172,10 +241,9 @@ public class MainClass {
 		// String s = "ejwwmybnorgshugzmoxopwuvshlcwasclobxmckcvtxfndeztdqiakfusswqsovdfwatanwxgtctyjvsmlcoxijrahivwfybbbudosawnfpmomgczirzscqvlaqhfqkithlhbodptvdhjljltckogcjsdbbktotnxgwyuapnxuwgfirbmdrvgapldsvwgqjfxggtixjhshnzphcemtzsvodygbxpriwqockyavfscvtsewyqpxlnnqnvrkmjtjbjllilinflkbfoxdhocsbpirmcbznuioevcojkdqvoraeqdlhffkwqbjsdkfxstdpxryixrdligpzldgtiqryuasxmxwgtcwsvwasngdwovxzafuixmjrobqbbnhwpdokcpfpxinlfmkfrfqrtzkhabidqszhxorzfypcjcnopzwigmbznmjnpttflsmjifknezrneedvgzfmnhoavxqksjreddpmibbodtbhzfehgluuukupjmbbvshzxyniaowdjamlfssndojyyephstlonsplrettspwepipwcjmfyvfybxiuqtkdlzqedjxxbvdsfurhedneauccrkyjfiptjfxmpxlssrkyldfriuvjranikluqtjjcoiqffdxaukagphzycvjtvwdhhxzagkevvuccxccuoccdkbboymjtimdrmerspxpktsmrwrlkvpnhqrvpdekmtpdfuxzjwpvqjjhfaupylefbvbsbhdncsshmrhxoyuejenqgjheulkxjnqkwvzznriclrbzryfaeuqkfxrbldyusoeoldpbwadhrgijeplijcvqbormrqglgmzsprtmryvkeevlthvflsvognbxfjilwkdndyzwwxgdbeqwlldyezmkopktzugxgkklimhhjqkmuaifnodtpredhqygmedtqpezboimeuyyujfjxkdmbjpizpqltvgknnlodtbhnbhjkmuhwxvzgmkhbcvvadhnssbvneecglnqxhavhvxpkjxlluilzpysjcnwguyofnhfvhaceztoiscumkhociglkvispihvyoatxcxbeqsmluixgsliatukrecgoldmzfhwkgaqzsckonjuhxdhqztjfxstjvikdrhpyjfxbjjryslfpqoiphrwfjqqhaamrjbrsiovrxmqsyxhqmritjeauwqbwtpqcqhvyyssvfknfhxvtodpzipueixdbntdfcaeatyyainfpkclbgaaqrwwzwbcjwiqzkwzfuxfclmsxpdyvfbnwxjytnaejivivriamhgqsskqhnqeurttrfrmstrbeokzhuzvbfmwywohmgogyhzpmsdemugqkspsmoppwbnwabdmiruibwznqcuczculujfiavzwynsyqxmarjkshjhxobandwyzggjibjgzyaaqxorqxbkenscbveqbaociwmqxxyzvyblypeongzrttvwqzmrccwkzidyfbxcaypyquodcpwxkstbthuvjqgialhfmgjohzoxvdaxuywfqrgmyahhtpqtazbphmfoluliznftodyguesshcacrsvutylalqrykehjuofisdookjhrljvedsywrlyccpaowjaqyfaqioesxnlkwgpbznzszyudpwrlgrdgwdyhucztsneqttsuirmjriohhgunzatyfrfzvgvptbgpwajgtysligupoqeoqxoyqtzozufvvlktnvahvsseymtpeyfvxttqosgpplkmxwgmsgtpantazppgnubmpwcdqkvhwfuvcahwibniohiqyywnuzzmxeppokxksrfwrpuzqhjgqryorwboxdauhrkxehiwaputeouwxdfoudcoagcxjcuqvenznxxnprgvhasffxtzaxpcfrcovwgrcwqptoekhmgpoywtxruxokcubekzcrqengviwbtgnzvdzrwwkqvacxwgdhffyvjldgvchoiwnfzoyvkiogisdfyjmfomcazigukqlumyzmnzjzhzfpslwsukykwckvktswjdqxdrlsqvsxwxpqkljeyjpulbswwmuhplfueqnvnhukgjarxlxvwmriqjgmxawmndhsvwnjdjvjtxcsjapfogpesxtpypenunfpjuyoevzztctecilqqbxkaqcyhiobvtqgqruumvvhxolbyzsqcrdchhdqprtkkjsccowrjtyjjmkhleanvfpemuublnnyzfabtxsestncfalqenfcswgerbfcqsapzdtscnzugmwlmidtxkvqhbuaecevwhmwkfqmvpgbefpqpsjmdecmixmmbsjxzwvjdmxydechlraajjmoqpcyoqmrjwoiumuzatydzcnktnkeyztoqvogodxxznhvzduzxudwwqhpftwdspuimioanlzobhjakgajafgzxpqckmhdbbnqmcszpuoqbztnftzgahhxwxbgkilnmzfydyxusnnvngksbjabqjaohdvrniezhmxmkxhemwbbclwdxwgngicplzgajmaryzfkyoqlkrmmfirchzrphveuwmvgaxzbwenvteifxuuefnimnadwxhruvoavlzyhfmeasmgrjawongccgfbgoualiaivbhcgvjjnxpggrewglalthmzvgziobrjeanlvyukwlscexbkibvdjhdgnepdiimmkcxhattwglbkicvsfswocbvphmtpwhcgjbnmxgidtlqcnnwtfujhvgzdussqbwynylzvtjapvqtidpdjkpshvrmqlhindhabubyokzdfrwqvnvgzkyhistydagsgnujiviyijdnabfxqbdqnexvwsvzvcsbrmkbkuzsdehghndyqjodnnblfwmaygdstotfkvxozgwhtbhlkvrzismnozqpfthajafuxekzlgigjpsukjvsdihrjzgovnreqwapdkoqswyclqyvbvpedzyoyedvuuamscbxnqnfmmjyehvidnoimmxmtcinwkbqmcobubjjpshucechrqrffqsyscnqoohcsxenypyqhfklloudgmklcejvgynwouzhtfwuuukdbwpmkjrqxeeaipxrokncholathupdetgaktmvmftqjvzyssocftjwemroghrncynmtchhhcaqxbqpthuaafwgrouaxonzocljeuslzsdwvuoodipdpnlhdihaywzmymxdjrqikughquwtenyucjdgrmipiidiwclhuepgyynoslhzahtdqwliktzsddaahohbszhqxxgripqlwlomjbwtuynydoakejmwkvojuwbfltqjfgxqhwkduzbxpdhtpvrzrfjndmsqfizmqxdxtpbpoemekvxzrrakwjxcxqsdasptruqmjtbaapgmkfnbwnlvzlxwdpzfjryanrmzmpzoefapmnsjdgecrdywsabctaegttffigupnwgakylngrrxurtotxqmzxvsqazajvrwsxyeyjteakeudzjxwbjvagnsjntskmocmpgkybqbnwvrwgoskzqkgffpsyhfmxhymqinrbohxlytsmoeleqrjvievpjipsgdkrqeuglrsjnmvdsihicsgkybcjltcswolpsfxdypmlbjotuxewskisnmczfgreuevnjssjifvlqlhkllifxrxkdbjlhcpegmtrelbosyajljvwwedtxbdccpnmreqaqjrxwulpunagwxesbilalrdniqbzxrbpcvmzpyqklsskpwctgqtrjwhrpisocwderqfiqxsdpkphjsapkvhvsqojyixaechvuoemmyqdlfkuzmlliugckuljfkljoshjhlvvlnywvjswvekfyqhjnsusefdtakejxbejrchoncklguqgnyrcslwztbstmycjziuskegagtlonducdogwbevugppsptdqbajmepmmizaycwcgmjeopbivsyphtvxvvgjbyxpgwpganjiaumojpyhhywosrmnouwpstgbrvhtlqcnmqbygbfnabesvshjmdbhyhirfrkqkmfwdgujhzyjdcbyuijjnkqluaczrnrbbwaeeupnwqzbsazplkyaxqorqsshhlljjlpphhedxdepgfgrqerpuhgmaawhnhqwsgnznrfmxjbdrkwjopylxezxgvetcvrwdewsxdeumhzfrvoilmvksuhyqltuimrnsphqslmgvmmojawwptghonigbdclqtbikiacwpjrbxhmzejozpypfixglatdvuogdoizdtsgsztsfcihtgwyqugeuahpuvvzmgarbsyuutmbxuisdfrvbxzxzhmuektssuktoknkfbmcwwubbnwenybmfqglaceuyqnoadzfenjcjfdlvcpiatuhjdujhaffqsvqvuxchgerokejovrqonxxstibunikiedfyahijobxyhimebctobsjudkqstbcxgixgrhpfiofpwruzvpqyjzvollheoldutddnksutjakhtghpxxnjykxjwgqmsvhnykclexepxqxqzghwfxfdhfmflesfabvanxlrurjtigkjotftqnwyskffpxlragrnfffawqtgyfpmzxfpkdpenxlewyxxgrkmwrmshhzfnorolyfxbvdrspxqnxnuoygkruczddgssygfymdcjgvdxutlrhffhnpyjuxmxefrelxezcgikdliyhvpocvvpkvagvmezrxffujeysplvavtjqjxsgujqsjznxforctwzecxyrkwufpdxadrgzczrnyelfschnagucguuqqqwitviynrypsrdswqxqsegulcwrwsjnihxedfcqychqumiscfkwmqqxunqrfbgqjdwmkyelbldxympctbzfupeocwhkypchuyvhybsbmvymjppfrqmlfrbkpjwpyyytytawuuyjrwxboogfessmltwdcssdqtwomymjskujjtmxiueopwacrwfuqazitvyhvlspvoaeipdsjhgyfjbxhityisidnhlksfznubucqxwaheamndjxmcxwufajmnveuwuoyosqnoqwvtjkwuhkzghvmjhawcfszbhzrbpgsidnbmxxihihnrfbamcyojqpkzodbejtmmipahojoysepzhpljpaugrghgjimtdahnpivdtlcnptnxjyiaafislqavamqgmxtdfoiaakorebqpbbpegawrqymqkewycsdjglkiwaacdqterkixkgraedtqirqmjtvsfhadhafktyrmkzmvidxmisfskvevpcnujqxrqedleuyowkjgphsxzzqlvujkwwgiodbfjesnbsbzcnftuzrvzjjudsgcqmmfpnmyrenuxotbbyvxyovzxgtcyzgqnsvcfhczoptnfnojnlinbfmylhdlijcvcxzjhdixuckaralemvsnbgooorayceuedtomzyjtctvtwgyiesxhynvogxnjdjphcftbefxgasawzagfugmuthjahylkhatlgpnkuksuesrduxkodwjzgubpsmzzmvkskzeglxaqrrvmrgcwcnvkhwzbibaxwnriowoavosminabvfxastkcrkdclgzjvqrjofjjvbyfragofeoazzeqljuypthkmywaffmcjkickqqsuhsviyovhitxeajqahshpejaqtcdkuvgdpclnsguabtgbfwdmrmbvydorfrbcokfdmtsgboidkpgpnmdeyhawkqqshtwxdbarwuxykgduxjlkxppwyruihkcqgynjcpbylayvgdqfpbqmshksyfbhrfxxemhgbkgmkhjtkzyzdqmxxwqvdtevyducpdksntgyaqtkrrkwiyuhukfadjvdnrievszilfinxbyrvknfihmetreydbcstkwoexwsfhfekfvfplmxszcosgovisnbemrjlndqwkvhqsofdbdychmupcsxvhazvrihhnxfyumonbvqeyoghccxfuwacxzxqkezxefxarnnujgyjugrzjoefmghjfhcrnbrtgouaehwnnxwkdplodpuqxdbemfwahptpfppjzowoltyqijfoabgzejerpatwponuefgdtcrgxswiddygeeflpjeelzccnsztxfyqhqyhkuppapvgvdtkmxraytcolbhkiiasaazkvqzvfxbaaxkoudovxrjkusxdazxaawmvoostlvvnsfbpjqkijvudpriqrfsrdfortimgdhtypunakzituezjyhbrpuksbamuiycngvlvpyvczfxvlwhjgicvempfobbwadkiavdswyuxdttoqaaykctprkwfmyeodowglzyjzuhencufcwdobydslazxadnftllhmjslfbrtdlahkgwlebdpdeofidldoymakfnpgekmsltcrrnxvspywfggjrmxryybdltmsfykstmlnzjitaipfoyohkmzimcozxardydxtpjgquoluzbznzqvlewtqyhryjldjoadgjlyfckzbnbootlzxhupieggntjxilcqxnocpyesnhjbauaxcvmkzusmodlyonoldequfunsbwudquaurogsiyhydswsimflrvfwruouskxjfzfynmrymyyqsvkajpnanvyepnzixyteyafnmwnbwmtojdpsucthxtopgpxgnsmnsrdhpskledapiricvdmtwaifrhnebzuttzckroywranbrvgmashxurelyrrbslxnmzyeowchwpjplrdnjlkfcoqdhheavbnhdlltjpahflwscafnnsspikuqszqpcdyfrkaabdigogatgiitadlinfyhgowjuvqlhrniuvrketfmboibttkgakohbmsvhigqztbvrsgxlnjndrqwmcdnntwofojpyrhamivfcdcotodwhvtuyyjlthbaxmrvfzxrhvzkydartfqbalxyjilepmemawjfxhzecyqcdswxxmaaxxyifmouauibstgpcfwgfmjlfhketkeshfcorqirmssfnbuqiqwqfhbmol";
 		// String[] words = stringToStringArray("[\"toiscumkhociglkvispihvyoatxcx\",\"ndojyyephstlonsplrettspwepipw\",\"yzfkyoqlkrmmfirchzrphveuwmvga\",\"mxxihihnrfbamcyojqpkzodbejtmm\",\"fenjcjfdlvcpiatuhjdujhaffqsvq\",\"ehghndyqjodnnblfwmaygdstotfkv\",\"heoldutddnksutjakhtghpxxnjykx\",\"cvrwdewsxdeumhzfrvoilmvksuhyq\",\"ftqjvzyssocftjwemroghrncynmtc\",\"idiwclhuepgyynoslhzahtdqwlikt\",\"eurttrfrmstrbeokzhuzvbfmwywoh\",\"jxlluilzpysjcnwguyofnhfvhacez\",\"uskegagtlonducdogwbevugppsptd\",\"xmcxwufajmnveuwuoyosqnoqwvtjk\",\"wolpsfxdypmlbjotuxewskisnmczf\",\"fjryanrmzmpzoefapmnsjdgecrdyw\",\"jgmxawmndhsvwnjdjvjtxcsjapfog\",\"wuhkzghvmjhawcfszbhzrbpgsidnb\",\"yelbldxympctbzfupeocwhkypchuy\",\"vzduzxudwwqhpftwdspuimioanlzo\",\"bdpdeofidldoymakfnpgekmsltcrr\",\"fmyeodowglzyjzuhencufcwdobyds\",\"dhtypunakzituezjyhbrpuksbamui\",\"bdmiruibwznqcuczculujfiavzwyn\",\"eudzjxwbjvagnsjntskmocmpgkybq\",\"tuynydoakejmwkvojuwbfltqjfgxq\",\"psrdswqxqsegulcwrwsjnihxedfcq\",\"cokfdmtsgboidkpgpnmdeyhawkqqs\",\"fujhvgzdussqbwynylzvtjapvqtid\",\"rqeuglrsjnmvdsihicsgkybcjltcs\",\"vhybsbmvymjppfrqmlfrbkpjwpyyy\",\"aukagphzycvjtvwdhhxzagkevvucc\",\"hwkduzbxpdhtpvrzrfjndmsqfizmq\",\"ywnuzzmxeppokxksrfwrpuzqhjgqr\",\"qbajmepmmizaycwcgmjeopbivsyph\",\"uamscbxnqnfmmjyehvidnoimmxmtc\",\"nxvspywfggjrmxryybdltmsfykstm\",\"amrjbrsiovrxmqsyxhqmritjeauwq\",\"yorwboxdauhrkxehiwaputeouwxdf\",\"qkewycsdjglkiwaacdqterkixkgra\",\"ycngvlvpyvczfxvlwhjgicvempfob\",\"jgphsxzzqlvujkwwgiodbfjesnbsb\",\"mkxhemwbbclwdxwgngicplzgajmar\",\"mryvkeevlthvflsvognbxfjilwkdn\",\"mezrxffujeysplvavtjqjxsgujqsj\",\"rtotxqmzxvsqazajvrwsxyeyjteak\",\"sabctaegttffigupnwgakylngrrxu\",\"xccuoccdkbboymjtimdrmerspxpkt\",\"xusnnvngksbjabqjaohdvrniezhmx\",\"oyuejenqgjheulkxjnqkwvzznricl\",\"mxszcosgovisnbemrjlndqwkvhqso\",\"wsgnznrfmxjbdrkwjopylxezxgvet\",\"dxmisfskvevpcnujqxrqedleuyowk\",\"dhrgijeplijcvqbormrqglgmzsprt\",\"vuxchgerokejovrqonxxstibuniki\",\"lumyzmnzjzhzfpslwsukykwckvkts\",\"inwkbqmcobubjjpshucechrqrffqs\",\"ywtxruxokcubekzcrqengviwbtgnz\",\"ccpnmreqaqjrxwulpunagwxesbila\",\"pesxtpypenunfpjuyoevzztctecil\",\"sygfymdcjgvdxutlrhffhnpyjuxmx\",\"uisdfrvbxzxzhmuektssuktoknkfb\",\"cejvgynwouzhtfwuuukdbwpmkjrqx\",\"oudcoagcxjcuqvenznxxnprgvhasf\",\"sxnlkwgpbznzszyudpwrlgrdgwdyh\",\"qqbxkaqcyhiobvtqgqruumvvhxolb\",\"mkhleanvfpemuublnnyzfabtxsest\",\"bibaxwnriowoavosminabvfxastkc\",\"bcxgixgrhpfiofpwruzvpqyjzvoll\",\"lzccnsztxfyqhqyhkuppapvgvdtkm\",\"pdjkpshvrmqlhindhabubyokzdfrw\",\"qbbnhwpdokcpfpxinlfmkfrfqrtzk\",\"rnyelfschnagucguuqqqwitviynry\",\"qtrjwhrpisocwderqfiqxsdpkphjs\",\"vxttqosgpplkmxwgmsgtpantazppg\",\"tyisidnhlksfznubucqxwaheamndj\",\"kgaqzsckonjuhxdhqztjfxstjvikd\",\"jeuslzsdwvuoodipdpnlhdihaywzm\",\"vdzrwwkqvacxwgdhffyvjldgvchoi\",\"cftbefxgasawzagfugmuthjahylkh\",\"xraytcolbhkiiasaazkvqzvfxbaax\",\"oyqtzozufvvlktnvahvsseymtpeyf\",\"rnnujgyjugrzjoefmghjfhcrnbrtg\",\"rfzvgvptbgpwajgtysligupoqeoqx\",\"igbdclqtbikiacwpjrbxhmzejozpy\",\"dyzwwxgdbeqwlldyezmkopktzugxg\",\"hmetreydbcstkwoexwsfhfekfvfpl\",\"zcnftuzrvzjjudsgcqmmfpnmyrenu\",\"zzmvkskzeglxaqrrvmrgcwcnvkhwz\",\"vjswvekfyqhjnsusefdtakejxbejr\",\"rwwzwbcjwiqzkwzfuxfclmsxpdyvf\",\"fdbdychmupcsxvhazvrihhnxfyumo\",\"vdtevyducpdksntgyaqtkrrkwiyuh\",\"nbvqeyoghccxfuwacxzxqkezxefxa\",\"vpgbefpqpsjmdecmixmmbsjxzwvjd\",\"jwgqmsvhnykclexepxqxqzghwfxfd\",\"olyfxbvdrspxqnxnuoygkruczddgs\",\"qgmxtdfoiaakorebqpbbpegawrqym\",\"liaivbhcgvjjnxpggrewglalthmzv\",\"choncklguqgnyrcslwztbstmycjzi\",\"fpkdpenxlewyxxgrkmwrmshhzfnor\",\"hhhcaqxbqpthuaafwgrouaxonzocl\",\"ipahojoysepzhpljpaugrghgjimtd\",\"wosrmnouwpstgbrvhtlqcnmqbygbf\",\"nwyskffpxlragrnfffawqtgyfpmzx\",\"bcvvadhnssbvneecglnqxhavhvxpk\",\"hoavxqksjreddpmibbodtbhzfehgl\",\"lazxadnftllhmjslfbrtdlahkgwle\",\"uuukupjmbbvshzxyniaowdjamlfss\",\"tpqtazbphmfoluliznftodyguessh\",\"ychqumiscfkwmqqxunqrfbgqjdwmk\",\"rkdclgzjvqrjofjjvbyfragofeoaz\",\"pphhedxdepgfgrqerpuhgmaawhnhq\",\"cacrsvutylalqrykehjuofisdookj\",\"kyldfriuvjranikluqtjjcoiqffdx\",\"bnwvrwgoskzqkgffpsyhfmxhymqin\",\"uzmlliugckuljfkljoshjhlvvlnyw\",\"abfxqbdqnexvwsvzvcsbrmkbkuzsd\",\"xotbbyvxyovzxgtcyzgqnsvcfhczo\",\"bwtpqcqhvyyssvfknfhxvtodpzipu\",\"nsfbpjqkijvudpriqrfsrdfortimg\",\"tgwyqugeuahpuvvzmgarbsyuutmbx\",\"upnwqzbsazplkyaxqorqsshhlljjl\",\"edfyahijobxyhimebctobsjudkqst\",\"ialhfmgjohzoxvdaxuywfqrgmyahh\",\"jlhcpegmtrelbosyajljvwwedtxbd\",\"tpfppjzowoltyqijfoabgzejerpat\",\"mgogyhzpmsdemugqkspsmoppwbnwa\",\"nubmpwcdqkvhwfuvcahwibniohiqy\",\"ukfadjvdnrievszilfinxbyrvknfi\",\"dgnepdiimmkcxhattwglbkicvsfsw\",\"syqxmarjkshjhxobandwyzggjibjg\",\"bnwxjytnaejivivriamhgqsskqhnq\",\"hzyjdcbyuijjnkqluaczrnrbbwaee\",\"yscnqoohcsxenypyqhfklloudgmkl\",\"habidqszhxorzfypcjcnopzwigmbz\",\"wjdqxdrlsqvsxwxpqkljeyjpulbsw\",\"tytawuuyjrwxboogfessmltwdcssd\",\"pfixglatdvuogdoizdtsgsztsfcih\",\"apkvhvsqojyixaechvuoemmyqdlfk\",\"ouaehwnnxwkdplodpuqxdbemfwahp\",\"ixuckaralemvsnbgooorayceuedto\",\"ymxdjrqikughquwtenyucjdgrmipi\",\"smrwrlkvpnhqrvpdekmtpdfuxzjwp\",\"bhjakgajafgzxpqckmhdbbnqmcszp\",\"beqsmluixgsliatukrecgoldmzfhw\",\"greuevnjssjifvlqlhkllifxrxkdb\",\"yzsqcrdchhdqprtkkjsccowrjtyjj\",\"sviyovhitxeajqahshpejaqtcdkuv\",\"qtwomymjskujjtmxiueopwacrwfuq\",\"mzyjtctvtwgyiesxhynvogxnjdjph\",\"dyfbxcaypyquodcpwxkstbthuvjqg\",\"hfmflesfabvanxlrurjtigkjotftq\",\"mxydechlraajjmoqpcyoqmrjwoium\",\"nabesvshjmdbhyhirfrkqkmfwdguj\",\"bhrfxxemhgbkgmkhjtkzyzdqmxxwq\",\"gziobrjeanlvyukwlscexbkibvdjh\",\"mcwwubbnwenybmfqglaceuyqnoadz\",\"xyzvyblypeongzrttvwqzmrccwkzi\",\"ncfalqenfcswgerbfcqsapzdtscnz\",\"dtqpezboimeuyyujfjxkdmbjpizpq\",\"wmuhplfueqnvnhukgjarxlxvwmriq\",\"qwapdkoqswyclqyvbvpedzyoyedvu\",\"uoqbztnftzgahhxwxbgkilnmzfydy\",\"zsddaahohbszhqxxgripqlwlomjbw\",\"bwadkiavdswyuxdttoqaaykctprkw\",\"eixdbntdfcaeatyyainfpkclbgaaq\",\"nmjnpttflsmjifknezrneedvgzfmn\",\"avlzyhfmeasmgrjawongccgfbgoua\",\"kklimhhjqkmuaifnodtpredhqygme\",\"xzbwenvteifxuuefnimnadwxhruvo\",\"ugmwlmidtxkvqhbuaecevwhmwkfqm\",\"rhpyjfxbjjryslfpqoiphrwfjqqha\",\"eeaipxrokncholathupdetgaktmvm\",\"ltuimrnsphqslmgvmmojawwptghon\",\"azitvyhvlspvoaeipdsjhgyfjbxhi\",\"efrelxezcgikdliyhvpocvvpkvagv\",\"znxforctwzecxyrkwufpdxadrgzcz\",\"kcqgynjcpbylayvgdqfpbqmshksyf\",\"hrljvedsywrlyccpaowjaqyfaqioe\",\"cjmfyvfybxiuqtkdlzqedjxxbvdsf\",\"zeqljuypthkmywaffmcjkickqqsuh\",\"wnfzoyvkiogisdfyjmfomcazigukq\",\"zyaaqxorqxbkenscbveqbaociwmqx\",\"ahnpivdtlcnptnxjyiaafislqavam\",\"edtqirqmjtvsfhadhafktyrmkzmvi\",\"wponuefgdtcrgxswiddygeeflpjee\",\"xozgwhtbhlkvrzismnozqpfthajaf\",\"ptnfnojnlinbfmylhdlijcvcxzjhd\",\"uxekzlgigjpsukjvsdihrjzgovnre\",\"rbohxlytsmoeleqrjvievpjipsgdk\",\"fxtzaxpcfrcovwgrcwqptoekhmgpo\",\"tvxvvgjbyxpgwpganjiaumojpyhhy\",\"vqjjhfaupylefbvbsbhdncsshmrhx\",\"urhedneauccrkyjfiptjfxmpxlssr\",\"ltvgknnlodtbhnbhjkmuhwxvzgmkh\",\"ucztsneqttsuirmjriohhgunzatyf\",\"rbzryfaeuqkfxrbldyusoeoldpbwa\",\"atlgpnkuksuesrduxkodwjzgubpsm\",\"lrdniqbzxrbpcvmzpyqklsskpwctg\",\"qvnvgzkyhistydagsgnujiviyijdn\",\"uzatydzcnktnkeyztoqvogodxxznh\",\"ocbvphmtpwhcgjbnmxgidtlqcnnwt\",\"koudovxrjkusxdazxaawmvoostlvv\",\"ptruqmjtbaapgmkfnbwnlvzlxwdpz\",\"xdxtpbpoemekvxzrrakwjxcxqsdas\",\"gdpclnsguabtgbfwdmrmbvydorfrb\",\"htwxdbarwuxykgduxjlkxppwyruih\"]");
 //		String s = "barfoofoobarthefoobarman";
-//				
-//				String[] words = stringToStringArray(" [\"bar\",\"foo\",\"the\"] ");
-				String s = 		"aaa";
-				String[] words = stringToStringArray(" [\"aa\",\"aa\"] ");
+//		String[] words = stringToStringArray(" [\"bar\",\"foo\",\"the\"] ");
+//				String s = 		"aaa";
+//				String[] words = stringToStringArray(" [\"aa\",\"aa\"] ");
 				
 		List<Integer> ret = new Solution().findSubstring(s, words);
 
